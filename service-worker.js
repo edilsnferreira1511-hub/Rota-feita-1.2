@@ -5,23 +5,34 @@
    este worker só cuida dos arquivos estáticos do app.
 ============================================================ */
 
-const CACHE_NAME = 'balancimetro-cache-v9';
+// Trocar este número sempre que o app for atualizado, para que os
+// aparelhos baixem os arquivos novos em vez de usar o cache antigo.
+const CACHE_NAME = 'balancimetro-cache-v11';
 
+// Arquivos essenciais: se algum faltar, a instalação do cache falha.
 const APP_SHELL = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './assets/splash-map.webp'
+  './manifest.json'
+];
+
+// Imagens: entram no cache quando existirem, sem travar a instalação.
+const OPTIONAL_FILES = [
+  './icon-192.png',
+  './icon-512.png',
+  './splash-map.webp'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then((cache) =>
+        cache.addAll(APP_SHELL).then(() =>
+          Promise.all(OPTIONAL_FILES.map((url) => cache.add(url).catch(() => {})))
+        )
+      )
       .then(() => self.skipWaiting())
   );
 });

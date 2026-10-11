@@ -134,7 +134,9 @@
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <h2>Histórico</h2>
-    <span></span>
+    <button class="backbtn" id="btn-open-backup" aria-label="Backup dos dados">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 4v10m0 0-4-4m4 4 4-4M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </header>
 
   <div class="segmented" id="history-segmented">
@@ -249,25 +251,50 @@
   <div class="modal-sheet">
     <div class="modal-sheet__handle"></div>
     <h3>Nova rota</h3>
+    <p class="hint" id="route-modal-date" style="display:none;margin-top:-10px;"></p>
 
     <label class="field">
       <span class="field__label">Quantidade de paradas</span>
       <input type="number" id="route-paradas" inputmode="numeric" placeholder="Ex: 35" step="1" min="0">
     </label>
 
-    <label class="field">
-      <span class="field__label">KM da rota</span>
-      <input type="number" id="route-km" inputmode="decimal" placeholder="Ex: 120" step="0.1" min="0">
-    </label>
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">KM da rota</span>
+        <input type="number" id="route-km" inputmode="decimal" placeholder="Ex: 120" step="0.1" min="0">
+      </label>
 
-    <label class="field">
-      <span class="field__label">Consumo do carro (km/L)</span>
-      <input type="number" id="route-consumo" inputmode="decimal" placeholder="Ex: 9.5" step="0.1" min="0">
-    </label>
+      <label class="field">
+        <span class="field__label">Consumo do carro (km/L)</span>
+        <input type="number" id="route-consumo" inputmode="decimal" placeholder="Ex: 9.5" step="0.1" min="0">
+      </label>
+    </div>
 
-    <label class="checkbox-field">
-      <input type="checkbox" id="route-feriado">
-      <span>Domingo / Feriado (+20%)</span>
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">Nome da rota</span>
+        <input type="text" id="route-nome" placeholder="Ex: A15 AM1" maxlength="30" autocomplete="off" autocapitalize="characters">
+      </label>
+
+      <label class="field">
+        <span class="field__label">ID da rota</span>
+        <input type="text" id="route-id" placeholder="Ex: 4821" maxlength="30" autocomplete="off">
+      </label>
+    </div>
+
+    <div class="checkbox-field feriado-box">
+      <label class="feriado-box__check">
+        <input type="checkbox" id="route-feriado">
+        <span id="route-feriado-label">Domingo / Feriado (+20%)</span>
+      </label>
+      <button type="button" class="pencil-btn" id="btn-edit-feriado-pct" aria-label="Alterar a porcentagem do adicional">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <label class="field" id="feriado-pct-field" style="display:none;">
+      <span class="field__label">Adicional deste dia (%) &mdash; vale só para esta rota</span>
+      <input type="number" id="route-feriado-pct" inputmode="decimal" placeholder="Ex: 30" step="1" min="0">
     </label>
 
     <div class="route-preview" id="route-preview">
@@ -294,7 +321,7 @@
     <div class="route-preview" id="quinzena-detail-body">
       <div class="route-preview__row route-preview__row--total"><span>Frete bruto</span><span id="qd-bruto-val">R$ 0,00</span></div>
 
-      <div class="route-preview__row route-preview__row--fuel"><span>Combustível estimado (<span id="qd-fuel-pct">0,0%</span>)</span><span id="qd-fuel-val">- R$ 0,00</span></div>
+      <div class="route-preview__row route-preview__row--fuel"><span>Abastecimentos (<span id="qd-fuel-pct">0,0%</span>)</span><span id="qd-fuel-val">- R$ 0,00</span></div>
       <div class="route-preview__row"><span>Rateio administrativo (8,0%)</span><span id="qd-rateio-val">- R$ 0,00</span></div>
       <div class="route-preview__row"><span>INSS (4,0%)</span><span id="qd-inss-val">- R$ 0,00</span></div>
       <div class="route-preview__row"><span>SEST/SENAT (0,5%)</span><span id="qd-sest-val">- R$ 0,00</span></div>
@@ -338,6 +365,41 @@
     </label>
     <button class="primary-btn" id="btn-save-km-end">Encerrar dia</button>
     <button class="text-btn" id="btn-cancel-km-end">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL BACKUP ===================== -->
+<div class="modal-overlay" id="modal-backup">
+  <div class="modal-sheet">
+    <div class="modal-sheet__handle"></div>
+    <h3>Backup dos dados</h3>
+    <p class="hint" style="margin-top:-6px;">Baixe seus dados antes de atualizar o app ou trocar de versão, e restaure na versão nova.</p>
+    <button class="primary-btn" id="btn-backup-download">Baixar backup</button>
+    <button class="secondary-btn" id="btn-backup-upload">Restaurar backup</button>
+    <input type="file" id="backup-file" accept="application/json,.json" hidden>
+    <button class="text-btn" id="btn-backup-cancel">Fechar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL ROTAS DA QUINZENA ===================== -->
+<div class="modal-overlay" id="modal-quinzena-routes">
+  <div class="modal-sheet">
+    <div class="modal-sheet__handle"></div>
+    <h3>Rotas da quinzena</h3>
+    <p class="hint" id="qr-period-label" style="margin-top:-10px;margin-bottom:14px;">—</p>
+    <div id="qr-list"></div>
+    <button class="text-btn" id="btn-close-quinzena-routes">Fechar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL CONFIRMAÇÃO ===================== -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-sheet">
+    <div class="modal-sheet__handle"></div>
+    <h3 id="confirm-title">Confirmar</h3>
+    <p class="hint" id="confirm-message" style="margin-top:-6px;"></p>
+    <button class="primary-btn" id="btn-confirm-ok">Confirmar</button>
+    <button class="text-btn" id="btn-confirm-cancel">Cancelar</button>
   </div>
 </div>
 
