@@ -7,7 +7,7 @@
 
 // Trocar este número sempre que o app for atualizado, para que os
 // aparelhos baixem os arquivos novos em vez de usar o cache antigo.
-const CACHE_NAME = 'balancimetro-cache-v11';
+const CACHE_NAME = 'balancimetro-cache-v12';
 
 // Arquivos essenciais: se algum faltar, a instalação do cache falha.
 const APP_SHELL = [

@@ -130,15 +130,24 @@
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-  // Etiquetas com o nome e o ID da rota (vazio se a rota não tiver nenhum).
-  const routeChipsHtml = (r) => {
+  // Etiquetas da rota: nome, ID e quantidade de paradas (nessa ordem).
+  // Nome e ID só aparecem se foram preenchidos. As paradas aparecem sempre
+  // que a rota tiver o número salvo, a menos que `paradas: false` (na tela
+  // Hoje o título do item já mostra as paradas, então não repete).
+  const routeChipsHtml = (r, { paradas = true } = {}) => {
     const nome = r && r.nomeRota ? String(r.nomeRota).trim() : '';
     const idRota = r && r.idRota ? String(r.idRota).trim() : '';
-    if (!nome && !idRota) return '';
+    const qtdParadas = r ? Number(r.paradas) : NaN;
+    const mostrarParadas = paradas && Number.isFinite(qtdParadas);
+    if (!nome && !idRota && !mostrarParadas) return '';
     return `<div class="route-chips">${
       nome ? `<span class="route-chip">${escapeHtml(nome)}</span>` : ''
     }${
       idRota ? `<span class="route-chip route-chip--id">ID ${escapeHtml(idRota)}</span>` : ''
+    }${
+      mostrarParadas
+        ? `<span class="route-chip route-chip--id">${qtdParadas} parada${qtdParadas === 1 ? '' : 's'}</span>`
+        : ''
     }</div>`;
   };
 
@@ -794,7 +803,7 @@
       item.className = 'route-item';
       item.innerHTML = `
         <div class="route-item__info">
-          ${routeChipsHtml(r)}
+          ${routeChipsHtml(r, { paradas: false })}
           <span class="route-item__title">${r.km} km \u00B7 ${r.paradas} parada${r.paradas === 1 ? '' : 's'}</span>
           <span class="route-item__meta">Bruto ${fmtBRL(r.faturamento)} \u00B7 Combust. ${fmtBRL(r.combustivel)}${r.feriado ? ` \u00B7 Feriado (+${fmtPctInt(r.feriadoPct != null ? r.feriadoPct : FERIADO_PCT_PADRAO)}%)` : ''}</span>
         </div>
